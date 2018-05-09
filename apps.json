@@ -1,0 +1,10 @@
+{"apps": [
+  {
+    "name": "msAPI",
+    "script": ".app.js",
+    "cwd":". ",
+    "env": { },
+    "env_production": {}
+  }
+
+  ]}
