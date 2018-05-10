@@ -5,6 +5,8 @@
 
 var request = require('request');
 var Q = require('q');
+const config = require('./config')
+
 
 // The graph module object.
 var graph = {};
@@ -567,7 +569,110 @@ graph.getUserSchema = function (token, userId, attributeName)
 
 
 
+  graph.getSkus = function (token)
+  {
+    return new Promise( (resolve,reject) =>{
+      request.get(
+        {
+          url: 'https://graph.microsoft.com/beta/subscribedSkus',
+          headers:
+          {
+            'content-type': 'application/json',
+            authorization: 'Bearer ' + token,
+          },
+        },
+        function (err, response, body)
+        {
+          // console.log(JSON.parse(body));
+          if (err) {reject(err);}
+          let parseBody = {};
+          try{
+            parseBody=JSON.parse(body);
+          }catch(err){
+            reject(err);
+          }
+          resolve(JSON.parse(body));
+        });
+      });
+    };
 
+
+
+
+
+graph.addLicenses = function (token, principal)
+{
+  let postData={};
+  let skuId = config.defaultSku;
+  // {
+  //   "addLicenses": [
+  //     {
+  //       "disabledPlans": [ "11b0131d-43c8-4bbb-b2c8-e80f9a50834a" ],
+  //       "skuId": "skuId-value-1"
+  //     },
+  //     {
+  //       "disabledPlans": [ "a571ebcc-fqe0-4ca2-8c8c-7a284fd6c235" ],
+  //       "skuId": "skuId-value-2"
+  //     }
+  //   ],
+  //   "removeLicenses": []
+  // }
+
+  postData.addLicenses = [{
+    "disabledPlans":[],
+    "skuId": skuId
+  }];
+  postData.removeLicenses = []
+
+
+  console.log(postData);
+  return new Promise( (resolve,reject) =>{
+    request.post(
+      {
+        url: ' https://graph.microsoft.com/beta/users/'+ principal +'/assignLicense',
+        headers:
+        {
+          'content-type': 'application/json',
+          authorization: 'Bearer ' + token,
+        },
+        body: JSON.stringify(postData)
+      },
+      function (err, response, body)
+      {
+        console.log(body);
+        if (err) {reject(err);}
+        resolve(body);
+      });
+  });
+};
+
+
+graph.removeLicenses = function (token, principal)
+{
+  let postData={};
+  let skuId = config.defaultSku;
+  postData.addLicenses = [];
+  postData.removeLicenses = [skuId]
+  console.log(postData);
+  return new Promise( (resolve,reject) =>{
+    request.post(
+      {
+        url: ' https://graph.microsoft.com/beta/users/'+ principal +'/assignLicense',
+        headers:
+        {
+          'content-type': 'application/json',
+          authorization: 'Bearer ' + token,
+        },
+        body: JSON.stringify(postData)
+      },
+      function (err, response, body)
+      {
+        console.log(body);
+        if (err) {reject(err);}
+        resolve(body);
+      });
+  });
+};
 
 
 

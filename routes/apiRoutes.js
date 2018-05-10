@@ -108,6 +108,8 @@ router.get("/getExtendedAttr",(req,res) =>{
 });
 
 
+
+
 router.post("/createUserSafe",(req,res) =>{
  //(token, displayName,mailNickname,givenName,surname,userPrincipalName,password)
   let displayName = req.body.displayName;
@@ -304,6 +306,8 @@ router.get("/findUserByPrincipalName",(req,res) =>{
   });
 });
 
+
+
 /*
   get all users belonging to the given group, identified by group id
  */
@@ -331,6 +335,12 @@ router.get("/listMembers",(req,res) =>{
   });
 });
 });
+
+
+
+
+
+
 
 
 /*
@@ -444,3 +454,54 @@ router.get("/listAllUsers",(req,res) =>{
  /**
   * token userPrincipalName to check if the user exists
   */
+
+
+
+/*
+  get all users belonging to the given group, identified by group id
+ */
+router.get("/skus",(req,res) =>{
+  auth.getUserAccessToken().then( token =>{
+    graph.getSkus(token)
+    .then(resp =>{
+        res.json(resp);
+    })
+    .catch( err =>{
+      console.log(err);
+      res.json({"status":"NOK", "error":err});
+    });
+  });
+});
+
+
+
+
+
+router.post("/addLicenses",(req,res) =>{
+  let principal = req.body.principal;
+  auth.getUserAccessToken().then( token =>{
+    graph.addLicenses(token,principal)
+    .then(resp =>{
+        res.json(resp);
+    })
+    .catch( err =>{
+      console.log(err);
+      res.json({"status":"NOK", "error":err});
+    });
+  });
+});
+
+
+router.post("/removeLicenses",(req,res) =>{
+  let principal = req.body.principal;
+  auth.getUserAccessToken().then( token =>{
+    graph.removeLicenses(token,principal)
+    .then(resp =>{
+        res.json(resp);
+    })
+    .catch( err =>{
+      console.log(err);
+      res.json({"status":"NOK", "error":err});
+    });
+  });
+});
