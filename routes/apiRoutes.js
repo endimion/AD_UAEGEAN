@@ -34,6 +34,7 @@ module.exports = router;
 // });
 
 
+//TODO
 router.post("/createUser",(req,res) =>{
  //(token, displayName,mailNickname,givenName,surname,userPrincipalName,password)
   let displayName = req.body.displayName;
@@ -92,6 +93,8 @@ router.post("/createUser",(req,res) =>{
 });
 
 
+
+//DONE
 router.get("/getExtendedAttr",(req,res) =>{
     let userId = req.query.userId;
     let attr = req.query.attr;
@@ -109,7 +112,7 @@ router.get("/getExtendedAttr",(req,res) =>{
 
 
 
-
+//TODO
 router.post("/createUserSafe",(req,res) =>{
  //(token, displayName,mailNickname,givenName,surname,userPrincipalName,password)
   let displayName = req.body.displayName;
@@ -182,9 +185,12 @@ router.post("/createGroup",(req,res) =>{
 });
 
 
+
 //(token, displayName, mailNickname)
 router.post("/createTeam",(req,res) =>{
  //(token, displayName,mailNickname,givenName,surname,userPrincipalName,password)
+ //(cons
+  console.log("hey from normal api");
   let groupId = req.body.groupId;
   auth.getUserAccessToken().then( token =>{
     graph.createTeam(token,groupId)
@@ -208,7 +214,6 @@ router.post("/createTeam",(req,res) =>{
 });
 
 
-
 router.post("/sendInvite",(req,res) =>{
   let userEmail = req.body.userEmail;
   let redirectURL = req.body.redirectURL;
@@ -225,7 +230,7 @@ router.post("/sendInvite",(req,res) =>{
   });
 });
 
-
+//TODO
 router.post("/add2Group",(req,res) =>{
   let userId = req.body.userId;
   let groupName = req.body.groupName;
@@ -241,7 +246,6 @@ router.post("/add2Group",(req,res) =>{
     });
   });
 });
-
 
 router.post("/add2GroupById",(req,res) =>{
   let userId = req.body.userId;
@@ -259,6 +263,7 @@ router.post("/add2GroupById",(req,res) =>{
   });
 });
 
+
 router.post("/updateUser",(req,res) =>{
   let userId = req.body.userId;
   let attributeName = req.body.attributeName
@@ -274,6 +279,7 @@ router.post("/updateUser",(req,res) =>{
     });
   });
 });
+
 
 router.get("/getGroups",(req,res) =>{
 
@@ -318,7 +324,7 @@ router.get("/listMembers",(req,res) =>{
     .then(resp =>{
       let members={};
         try{
-          members=JSON.parse(resp);
+        members=JSON.parse(resp);
         }catch(err){
           console.log("ERROR",err);
           res.json( { "status":"NOK",
@@ -346,6 +352,7 @@ router.get("/listMembers",(req,res) =>{
 /*
   get all users belonging to the given group, identified by group id
  */
+//TODO
 router.get("/listOwners",(req,res) =>{
   let groupId = req.query.groupId;
   auth.getUserAccessToken().then( token =>{
@@ -375,6 +382,7 @@ router.get("/listOwners",(req,res) =>{
 /*
   get all users of the system
  */
+//TODO
 router.get("/listAllUsers",(req,res) =>{
   let users = [] ;
   let promises = [];
@@ -460,6 +468,7 @@ router.get("/listAllUsers",(req,res) =>{
 /*
   get all users belonging to the given group, identified by group id
  */
+//TODO
 router.get("/skus",(req,res) =>{
   auth.getUserAccessToken().then( token =>{
     graph.getSkus(token)
@@ -476,7 +485,7 @@ router.get("/skus",(req,res) =>{
 
 
 
-
+//TODO
 router.post("/addLicenses",(req,res) =>{
   let principal = req.body.principal;
   auth.getUserAccessToken().then( token =>{
@@ -491,7 +500,7 @@ router.post("/addLicenses",(req,res) =>{
   });
 });
 
-
+//TODO
 router.post("/removeLicenses",(req,res) =>{
   let principal = req.body.principal;
   auth.getUserAccessToken().then( token =>{

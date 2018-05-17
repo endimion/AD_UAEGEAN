@@ -53,7 +53,7 @@ graph.getUsers = function (token) {
 */
 graph.createUser = function (token, displayName,mailNickname,givenName,surname,userPrincipalName,password,eId)
 {
-  newUser =
+  const newUser =
   {
     "accountEnabled": true,
     // "userType": "Guest",
@@ -81,37 +81,20 @@ graph.createUser = function (token, displayName,mailNickname,givenName,surname,u
       },
       function (err, response, body)
       {
-        let userId ="";
+        // // console.log(body);
+        // let userId ="";
         try{
             userId = JSON.parse(body).id;
+            resolve(body);
         }catch(err){
           console.log("ERROR",err);
-        };
+          reject(err);
+        }
+        if(err) reject(err);
+    });
 
-        console.log(userId);
-        //add the eID field to the created user
-        request.patch(
-          {
-            url: 'https://graph.microsoft.com/v1.0/users/'+userId,
-            headers:
-            {
-              'content-type': 'application/json',
-              authorization: 'Bearer ' + token,
-            },
-            body: JSON.stringify({"officeLocation":eId})
-          }, (err,resp,bd) =>{
-            if(err) reject(err);
-            // console.log(bd);
-            // console.log(resp);
-            resolve(body);
-          });
-
-          console.log(body);
-          if(err){ reject(err); }
-          resolve(body);
-        })
-      });
-    };
+  });
+}
 
 
     /**
@@ -151,11 +134,13 @@ graph.createUser = function (token, displayName,mailNickname,givenName,surname,u
             }
             try{
               let result = JSON.parse(body).invitedUser.id;
+              if(result.error) reject(result.error);
+              resolve(result);
             }catch(err){
               console.log("ERROR",err);
               reject(err);
             }
-            resolve(result);
+
           });
         });
       };
@@ -235,16 +220,14 @@ graph.createUser = function (token, displayName,mailNickname,givenName,surname,u
           };
 
           let owner = isOwner == 'true';
-          console.log("isOwner", owner);
-          console.log("check : ",  owner ==  true);
+          // console.log("isOwner", owner);
+          // console.log("check : ",  owner ==  true);
           if( owner ){
             // theUrl = 'https://graph.microsoft.com/v1.0/groups/'+groupId+'/owners/$ref';
             theUrl = 'https://graph.microsoft.com/beta/groups/'+groupId+'/owners/$ref';
-            console.log("1the url is!!! :", theUrl);
           }else{
             // theUrl = 'https://graph.microsoft.com/v1.0/groups/'+groupId+'/members/$ref';
             theUrl = 'https://graph.microsoft.com/beta/groups/'+groupId+'/members/$ref';
-            console.log("2the url is!!! :", theUrl);
           }
 
           return new Promise( (resolve,reject) =>{
@@ -258,12 +241,24 @@ graph.createUser = function (token, displayName,mailNickname,givenName,surname,u
                 },
                 body: JSON.stringify(newUser)
               },
-              function (err, response, body)
+              function (err, resp, body)
               {
-                // console.log(body);
-                // console.log(response);
                 if(err){reject(err);}
-                resolve(body);
+                 if(resp.statusCode == 204){
+                   resolve(resp.statusCode);
+                 }else{
+                   try{
+                     let error = JSON.parse(body).error;
+                     if(error){
+                       reject(error);
+                     }else{
+                       // console.log(body);
+                       throw("response not a json");
+                     }
+                   }catch(error){
+                     reject({"message":"expected Http status 204 but was " + resp.statusCode});
+                   }
+                 }
               });
             });
           };
@@ -301,15 +296,19 @@ graph.createUser = function (token, displayName,mailNickname,givenName,surname,u
                   bearer: token
                 }
               }, function (err, response, body) {
+                console.log("body: ",body);
                 let parsedBody ="";
                 try{
                    parsedBody= JSON.parse(body)
+                   if(parsedBody.error){
+                     reject(parsedBody.error);
+                   }else{
+                     resolve(parsedBody);
+                   }
                 }catch(error){
-                    console.log("ERROR",error);
                     reject(error);
                 }
                 if(err) reject(err);
-                resolve(body);
               });
             });
           };
@@ -343,8 +342,8 @@ graph.createUser = function (token, displayName,mailNickname,givenName,surname,u
             let updateObject={};
             updateObject[attributeName]=attributeValue;
             updateJson = JSON.stringify(updateObject);
-
-            console.log(updateJson);
+              console.log("updateUser userId", userId);
+             console.log("update User Request",updateJson);
             return new Promise( (resolve,reject) =>{
               request.patch(
                 {
@@ -358,8 +357,19 @@ graph.createUser = function (token, displayName,mailNickname,givenName,surname,u
                 },
                 function (err, response, body)
                 {
-                  console.log(body);
+                   console.log("Update User Response", body);
+
                   if (err) {reject(err);}
+                  if(response.statusCode === 204){
+                    resolve(response.statusCode);
+                  }else{
+                    let error = JSON.parse(body).error;
+                    if(error){
+                      reject(error);
+                    } else{
+                      reject({"message":"expected Http status 204 but was " + response.statusCode});
+                    }
+                  }
                 });
               });
             };
@@ -391,10 +401,10 @@ graph.createUser = function (token, displayName,mailNickname,givenName,surname,u
                   function (err, response, body)
                   {
                     if (err) {reject(err);}
-                    // console.log(body);
                     let theBody ={};
                     try{
                       theBody=JSON.parse(body);
+                      if(theBody.error){reject(theBody.error);}
                     }catch(err){
                       console.log("ERROR",err);
                       reject(err);
@@ -405,8 +415,8 @@ graph.createUser = function (token, displayName,mailNickname,givenName,surname,u
               };
 
               graph.createTeam = function (token, groupId) {
-                console.log(token);
-                console.log(groupId);
+                // console.log(token);
+                // console.log(groupId);
 
                 newTeam =
                 {
@@ -440,8 +450,8 @@ graph.createUser = function (token, displayName,mailNickname,givenName,surname,u
                       let theBody ={};
                       try{
                         theBody=JSON.parse(body);
+                        if(theBody.error) throw(theBody.error);
                       }catch(err){
-                        console.log("ERROR",err);
                         reject(err);
                       }
                       resolve(theBody.id);
@@ -463,8 +473,9 @@ graph.createUser = function (token, displayName,mailNickname,givenName,surname,u
                       let parsedBody ={} ;//JSON.parse(body);
                       try{
                         parsedBody = JSON.parse(body);
+                        if(parsedBody.error) reject(parsedBody.error)
                       }catch(error){
-                        console.log("ERROR",err);
+                        // console.log("ERROR",err);
                         reject(error);
                       }
                       if(err) reject(err);
@@ -481,15 +492,47 @@ graph.createUser = function (token, displayName,mailNickname,givenName,surname,u
 
 
 
+//
+// graph.createUserSchema = function (token, userId, attributeName)
+// {
+//   let updateObject={};
+//   updateObject["@odata.type"]="Microsoft.Graph.OpenTypeExtension";
+//   updateObject["extensionName"]=attributeName;
+//   updateObject["attribute"]="";
+//   updateJson = JSON.stringify(updateObject);
+//   console.log("CreateUserSchema userID" , userId);
+//   console.log("CreateUserSchema Request",updateJson);
+//   return new Promise( (resolve,reject) =>{
+//     request.post(
+//       {
+//         url: 'https://graph.microsoft.com/v1.0/users/'+userId+'/extensions',
+//         headers:
+//         {
+//           'content-type': 'application/json',
+//           authorization: 'Bearer ' + token,
+//         },
+//         body: JSON.stringify(updateObject)
+//       },
+//       function (err, response, body)
+//       {
+//         console.log("CreateUserSchemaResponse",body);
+//         if (err) {reject(err);}
+//         resolve(body);
+//       });
+//     });
+//   };
 
-graph.createUserSchema = function (token, userId, attributeName)
+graph.updateUserSchema = function (token, userId, extensionName, eIDASValue, uAegeanValue)
 {
   let updateObject={};
   updateObject["@odata.type"]="Microsoft.Graph.OpenTypeExtension";
-  updateObject["extensionName"]=attributeName;
-  updateObject["attribute"]="";
+  updateObject["extensionName"]=extensionName;
+  updateObject["eIDAS_ID"]=eIDASValue;
+  updateObject["UAegeanID"]=uAegeanValue;
   updateJson = JSON.stringify(updateObject);
-  console.log(updateJson);
+
+
+  console.log("Update User Schema Reqyest", updateJson);
   return new Promise( (resolve,reject) =>{
     request.post(
       {
@@ -503,37 +546,7 @@ graph.createUserSchema = function (token, userId, attributeName)
       },
       function (err, response, body)
       {
-        console.log(body);
-        if (err) {reject(err);}
-        resolve(body);
-      });
-    });
-  };
-
-graph.updateUserSchema = function (token, userId, attributeName, attributeValue)
-{
-  let updateObject={};
-  updateObject["@odata.type"]="Microsoft.Graph.OpenTypeExtension";
-  updateObject["extensionName"]=attributeName;
-  updateObject["attribute"]=attributeValue;
-  updateJson = JSON.stringify(updateObject);
-
-
-  console.log(updateJson);
-  return new Promise( (resolve,reject) =>{
-    request.patch(
-      {
-        url: 'https://graph.microsoft.com/v1.0/users/'+userId+'/extensions/'+attributeName,
-        headers:
-        {
-          'content-type': 'application/json',
-          authorization: 'Bearer ' + token,
-        },
-        body: JSON.stringify(updateObject)
-      },
-      function (err, response, body)
-      {
-        console.log(body);
+        console.log("Update User Schema Response",body);
         if (err) {reject(err);}
         resolve(body);
       });

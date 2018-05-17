@@ -15,6 +15,7 @@ const path = require('path');
 const bodyParser = require('body-parser');
 
 let apiRputes = require('./routes/apiRoutes');
+let apiRoutesV2 = require('./routes/apiRoutesV2')
 
 //middleware
 app.use(bodyParser.json()); // support json encoded bodies
@@ -22,6 +23,7 @@ app.use(bodyParser.urlencoded({ extended: true })); // support encoded bodies
 app.use(cookieParser());
 app.use(morgan('tiny')); //http request logger
 app.use('/',apiRputes);
+app.use('/v2',apiRoutesV2);
 
 
 //start the server
